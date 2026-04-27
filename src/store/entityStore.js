@@ -10,23 +10,44 @@ function generateId() {
 const entityTypes = {
   faction: {
     name: '势力',
-    attributes: ['power', 'resource_control', 'structure', 'locations']
+    attributes: [
+      { key: 'power', label: '力量' },
+      { key: 'resource_control', label: '资源控制' },
+      { key: 'structure', label: '结构' },
+      { key: 'locations', label: '地点' }
+    ]
   },
   character: {
     name: '角色',
-    attributes: ['faction_id', 'level', 'motivation']
+    attributes: [
+      { key: 'faction_id', label: '势力ID' },
+      { key: 'level', label: '等级' },
+      { key: 'motivation', label: '动机' }
+    ]
   },
   location: {
     name: '地点',
-    attributes: ['type', 'resource_output', 'danger_level']
+    attributes: [
+      { key: 'type', label: '类型' },
+      { key: 'resource_output', label: '资源产出' },
+      { key: 'danger_level', label: '危险等级' }
+    ]
   },
   resource: {
     name: '资源',
-    attributes: ['scarcity', 'usage', 'controller']
+    attributes: [
+      { key: 'scarcity', label: '稀缺度' },
+      { key: 'usage', label: '用途' },
+      { key: 'controller', label: '控制者' }
+    ]
   },
   item: {
     name: '物品',
-    attributes: ['level', 'origin', 'owner']
+    attributes: [
+      { key: 'level', label: '等级' },
+      { key: 'origin', label: '来源' },
+      { key: 'owner', label: '所有者' }
+    ]
   },
   system: {
     name: '系统',

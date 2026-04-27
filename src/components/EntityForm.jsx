@@ -166,12 +166,12 @@ function EntityForm() {
           <label>属性</label>
           <div className="attributes-container">
             {entityTypes[formData.type]?.attributes.map(attr => (
-              <div key={attr} className="attribute-item">
-                <label>{attr}</label>
+              <div key={attr.key} className="attribute-item">
+                <label>{attr.label}</label>
                 <input 
                   type="text" 
-                  value={formData.attributes[attr] || ''} 
-                  onChange={(e) => handleAttributeChange(attr, e.target.value)}
+                  value={formData.attributes[attr.key] || ''} 
+                  onChange={(e) => handleAttributeChange(attr.key, e.target.value)}
                 />
               </div>
             ))}
