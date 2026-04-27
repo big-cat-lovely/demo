@@ -10,8 +10,8 @@ function BackupManager() {
     loadBackups()
   }, [])
 
-  const loadBackups = () => {
-    const backupList = getBackupList()
+  const loadBackups = async () => {
+    const backupList = await getBackupList()
     setBackups(backupList)
   }
 
@@ -42,9 +42,9 @@ function BackupManager() {
     }
   }
 
-  const handleDelete = (backupPath) => {
+  const handleDelete = async (backupPath) => {
     if (window.confirm('确定要删除这个备份吗？')) {
-      const result = deleteBackup(backupPath)
+      const result = await deleteBackup(backupPath)
       if (result.success) {
         setMessage('删除成功！')
         loadBackups()
