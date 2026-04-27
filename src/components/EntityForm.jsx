@@ -165,7 +165,7 @@ function EntityForm() {
         <div className="form-group">
           <label>属性</label>
           <div className="attributes-container">
-            {entityTypes[formData.type]?.attributes.map(attr => (
+            {entityTypes[formData.type]?.attributes?.map(attr => (
               <div key={attr.key} className="attribute-item">
                 <label>{attr.label}</label>
                 <input 
