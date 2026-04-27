@@ -1,95 +1,98 @@
-import sqlite3 from 'sqlite3'
-import { open } from 'sqlite'
+// 数据库操作的接口定义
+// 在浏览器环境中，这些操作将通过 Tauri IPC 调用后端实现
+// 在开发环境中，使用内存存储模拟
 
-let db = null
+let memoryStore = {
+  entities: [],
+  materials: [],
+  relations: [],
+  rules: [],
+  global_params: []
+};
+
+// 检查是否在 Tauri 环境中
+const isTauri = typeof window !== 'undefined' && window.__TAURI__;
 
 // 初始化数据库
 export async function initDB() {
-  if (!db) {
-    db = await open({
-      filename: './worldbuilding.db',
-      driver: sqlite3.Database
-    })
-
-    // 创建素材库表
-    await db.exec(`
-      CREATE TABLE IF NOT EXISTS materials (
-        id TEXT PRIMARY KEY,
-        title TEXT NOT NULL,
-        content TEXT,
-        tags TEXT,
-        type TEXT NOT NULL,
-        source TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `)
-
-    // 创建规则表
-    await db.exec(`
-      CREATE TABLE IF NOT EXISTS rules (
-        id TEXT PRIMARY KEY,
-        name TEXT NOT NULL,
-        type TEXT NOT NULL,
-        exists INTEGER DEFAULT 1,
-        properties TEXT,
-        limit_description TEXT,
-        has_limit INTEGER DEFAULT 0
-      )
-    `)
-
-    // 创建全局参数表
-    await db.exec(`
-      CREATE TABLE IF NOT EXISTS global_params (
-        key TEXT PRIMARY KEY,
-        type TEXT NOT NULL,
-        min INTEGER,
-        max INTEGER,
-        value TEXT
-      )
-    `)
-
-    // 创建实体表
-    await db.exec(`
-      CREATE TABLE IF NOT EXISTS entities (
-        id TEXT PRIMARY KEY,
-        name TEXT NOT NULL,
-        type TEXT NOT NULL,
-        attributes TEXT,
-        tags TEXT,
-        description TEXT,
-        material_refs TEXT
-      )
-    `)
-
-    // 创建关系表
-    await db.exec(`
-      CREATE TABLE IF NOT EXISTS relations (
-        id TEXT PRIMARY KEY,
-        source_id TEXT NOT NULL,
-        target_id TEXT NOT NULL,
-        type TEXT NOT NULL,
-        strength INTEGER DEFAULT 0,
-        note TEXT,
-        FOREIGN KEY (source_id) REFERENCES entities (id),
-        FOREIGN KEY (target_id) REFERENCES entities (id)
-      )
-    `)
+  if (isTauri) {
+    // 在 Tauri 环境中，通过 IPC 初始化数据库
+    try {
+      const { invoke } = await import('@tauri-apps/api');
+      await invoke('init_db');
+    } catch (error) {
+      console.error('初始化数据库失败:', error);
+    }
   }
-  return db
+  return true;
 }
 
 // 获取数据库实例
 export async function getDB() {
-  if (!db) {
-    await initDB()
-  }
-  return db
+  // 在浏览器环境中，返回一个模拟的数据库对象
+  return {
+    run: async (sql, params) => {
+      if (isTauri) {
+        const { invoke } = await import('@tauri-apps/api');
+        return await invoke('run_sql', { sql, params });
+      } else {
+        // 模拟数据库操作
+        console.log('Running SQL:', sql, params);
+        return { changes: 1 };
+      }
+    },
+    all: async (sql, params) => {
+      if (isTauri) {
+        const { invoke } = await import('@tauri-apps/api');
+        return await invoke('query_sql', { sql, params });
+      } else {
+        // 模拟数据库查询
+        console.log('Querying SQL:', sql, params);
+        if (sql.includes('SELECT * FROM entities')) {
+          return memoryStore.entities;
+        } else if (sql.includes('SELECT * FROM materials')) {
+          return memoryStore.materials;
+        } else if (sql.includes('SELECT * FROM relations')) {
+          return memoryStore.relations;
+        } else if (sql.includes('SELECT * FROM rules')) {
+          return memoryStore.rules;
+        } else if (sql.includes('SELECT * FROM global_params')) {
+          return memoryStore.global_params;
+        }
+        return [];
+      }
+    },
+    get: async (sql, params) => {
+      if (isTauri) {
+        const { invoke } = await import('@tauri-apps/api');
+        return await invoke('query_sql', { sql, params });
+      } else {
+        // 模拟数据库查询
+        console.log('Querying SQL:', sql, params);
+        if (sql.includes('SELECT * FROM entities WHERE id = ?')) {
+          return memoryStore.entities.find(e => e.id === params[0]);
+        }
+        return null;
+      }
+    },
+    exec: async (sql) => {
+      if (isTauri) {
+        const { invoke } = await import('@tauri-apps/api');
+        return await invoke('exec_sql', { sql });
+      } else {
+        // 模拟数据库执行
+        console.log('Executing SQL:', sql);
+        return true;
+      }
+    }
+  };
 }
 
 // 关闭数据库连接
 export async function closeDB() {
-  if (db) {
-    await db.close()
-    db = null
+  if (isTauri) {
+    const { invoke } = await import('@tauri-apps/api');
+    await invoke('close_db');
   }
+  return true;
 }
