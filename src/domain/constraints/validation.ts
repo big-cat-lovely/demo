@@ -7,15 +7,13 @@ import { validateRelation } from '../relations/validation';
 import type { ConstraintViolation } from './types';
 
 export function validateEntityAgainstRules(entity: Entity, rules: RuleModule): ConstraintViolation[] {
-  const powerLimit = rules.globalParams.find(
-    (param) => param.key === 'power_limit' && param.type === 'number' && typeof param.value === 'number'
-  );
+  const powerLimit = getNumberGlobalParam(rules, 'power_limit');
 
-  if (!isCharacterEntity(entity) || !powerLimit) {
+  if (!isCharacterEntity(entity) || powerLimit === null) {
     return [];
   }
 
-  if (entity.attributes.level > powerLimit.value) {
+  if (entity.attributes.level > powerLimit) {
     return [
       {
         id: `entity:${entity.id}:power-limit`,
@@ -36,6 +34,11 @@ export function validateProject(project: WorldProject): ConstraintViolation[] {
     ...project.relations.flatMap((relation) => validateRelation(relation, project.entities)),
     ...project.references.flatMap((reference) => validateReference(reference, project))
   ];
+}
+
+function getNumberGlobalParam(rules: RuleModule, key: string): number | null {
+  const param = rules.globalParams.find((candidate) => candidate.key === key && candidate.type === 'number');
+  return typeof param?.value === 'number' ? param.value : null;
 }
 
 function validateReference(reference: Reference, project: WorldProject): ConstraintViolation[] {
