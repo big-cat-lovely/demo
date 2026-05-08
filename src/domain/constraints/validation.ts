@@ -31,6 +31,7 @@ export function validateEntityAgainstRules(entity: Entity, rules: RuleModule): C
 export function validateProject(project: WorldProject): ConstraintViolation[] {
   return [
     ...project.entities.flatMap((entity) => validateEntityAgainstRules(entity, project.rules)),
+    ...project.entities.flatMap((entity) => validateEntityMaterialRefs(entity, project)),
     ...project.relations.flatMap((relation) => validateRelation(relation, project.entities)),
     ...project.references.flatMap((reference) => validateReference(reference, project))
   ];
@@ -39,6 +40,18 @@ export function validateProject(project: WorldProject): ConstraintViolation[] {
 function getNumberGlobalParam(rules: RuleModule, key: string): number | null {
   const param = rules.globalParams.find((candidate) => candidate.key === key && candidate.type === 'number');
   return typeof param?.value === 'number' ? param.value : null;
+}
+
+function validateEntityMaterialRefs(entity: Entity, project: WorldProject): ConstraintViolation[] {
+  return entity.materialRefs
+    .filter((materialId) => !project.materials.some((material) => material.id === materialId))
+    .map((materialId) => ({
+      id: `entity:${entity.id}:missing-material:${materialId}`,
+      severity: 'error' as const,
+      code: 'missing_entity_material_ref',
+      message: 'Entity references a material that does not exist.',
+      target: { type: 'entity' as const, id: entity.id }
+    }));
 }
 
 function validateReference(reference: Reference, project: WorldProject): ConstraintViolation[] {
