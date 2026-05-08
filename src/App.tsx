@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import { validateProject } from './domain/constraints/validation';
 import type { Entity, EntityType } from './domain/entities/types';
 import type { MaterialType } from './domain/materials/types';
@@ -355,7 +356,7 @@ function RelationEditor({ relation }: { relation: ReturnType<typeof useProjectSt
   );
 }
 
-function ListPanel({ title, count, actionLabel, onAction, children }: { title: string; count: number; actionLabel: string; onAction(): void; children: React.ReactNode }) {
+function ListPanel({ title, count, actionLabel, onAction, children }: { title: string; count: number; actionLabel: string; onAction(): void; children: ReactNode }) {
   return (
     <section className="list-panel">
       <div className="section-title"><div><span>{title}</span><strong>{count}</strong></div><button type="button" onClick={onAction}>{actionLabel}</button></div>
