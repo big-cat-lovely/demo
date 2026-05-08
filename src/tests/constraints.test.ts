@@ -97,4 +97,15 @@ describe('worldbuilding constraints', () => {
       expect.arrayContaining([expect.objectContaining({ code: 'missing_reference_target' })])
     );
   });
+
+  it('flags entity material references that point to deleted materials', () => {
+    const project: WorldProject = {
+      ...sampleProject,
+      materials: []
+    };
+
+    expect(validateProject(project)).toEqual(
+      expect.arrayContaining([expect.objectContaining({ code: 'missing_entity_material_ref' })])
+    );
+  });
 });
