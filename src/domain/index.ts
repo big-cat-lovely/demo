@@ -7,6 +7,7 @@ export * from './materials/repository';
 export * from './materials/store';
 export * from './materials/types';
 export * from './project/repository';
+export * from './project/storage';
 export * from './project/types';
 export * from './references/types';
 export * from './relations/repository';
